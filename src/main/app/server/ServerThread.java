@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import main.app.config.Singleton;
+import main.app.server.observerdesign.ServerMessageObserver;
 /**
  * 
  * @author zukaLover
@@ -14,9 +15,11 @@ import main.app.config.Singleton;
 public class ServerThread implements Runnable{
 
 	private Singleton singleton;
+	private ServerMessageObserver observer;
 	
-	public ServerThread()
+	public ServerThread(ServerMessageObserver observer)
 	{
+		this.observer = observer;
 		singleton = Singleton.getSingletonInstance();
 	}
 	
@@ -30,7 +33,7 @@ public class ServerThread implements Runnable{
 			while(true)
 			{
 				Socket socket = serverSocket.accept();
-				new Thread(new ServerAcceptClientThread(socket)).start();
+				new Thread(new ServerAcceptClientThread(socket,observer)).start();
 			}
 			
 		}catch(IOException e)

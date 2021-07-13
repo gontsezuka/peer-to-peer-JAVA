@@ -20,6 +20,7 @@ import main.app.config.Singleton;
 import main.app.model.Server;
 import main.app.observerdesign.client.ClientMessageSubject;
 import main.app.server.ServerThread;
+import main.app.server.observerdesign.ServerMessageObserver;
 
 public class MainApplication extends JFrame {
 
@@ -36,6 +37,7 @@ public class MainApplication extends JFrame {
 	private JTextArea sendArea,receiveArea;
 	private Singleton singleton;
 	private ClientMessageSubject subject;
+	private ServerMessageObserver observer;
 	/**
 	 * MAIN APPLICATION COMPONENTS END
 	 */
@@ -95,6 +97,7 @@ public class MainApplication extends JFrame {
 		receiveArea.setLineWrap(true);
 		receiveArea.setWrapStyleWord(true);
 		
+		
 		JScrollPane pane = new JScrollPane(sendArea,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		JScrollPane pane2 = new JScrollPane(receiveArea,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		
@@ -106,6 +109,7 @@ public class MainApplication extends JFrame {
 		panel.add(sendToServer);
 		panel.add(pane2);
 		
+		observer = new ServerMessageObserver(receiveArea);
 		this.add(panel);
 	}
 	//===========================================================================================
@@ -179,7 +183,7 @@ public class MainApplication extends JFrame {
 			singleton.setServerHostName("localhost");
 			singleton.setServerPeerName(name);
 			singleton.setServerPortNumber(Integer.parseInt(port));
-			new Thread(new ServerThread()).start();
+			new Thread(new ServerThread(observer)).start();
 			
 			this.setVisible(true);
 			initialDialog.setVisible(false);

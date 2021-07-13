@@ -46,8 +46,7 @@ public class ServerAcceptClientThread implements Runnable {
 			while(true)
 			{
 				//System.out.println("Message Received: "+ in.readUTF());
-				subject.sendMessage(Thread.currentThread().getName()+":"+in.readUTF());
-				
+				subject.sendMessage(Thread.currentThread().getName()+": "+in.readUTF()+"\n");
 			}
 		}catch(IOException e)
 		{

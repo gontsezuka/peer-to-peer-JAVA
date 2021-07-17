@@ -14,7 +14,6 @@ public class Singleton {
 	private String serverPeerName;
 	private List<Server> serverList = new ArrayList<Server>();
 	
-	
 	private Singleton()
 	{
 		
@@ -28,8 +27,6 @@ public class Singleton {
 		}
 		return instance;
 	}
-
-
 
 	public String getServerHostName() {
 		return serverHostName;
@@ -72,10 +69,14 @@ public class Singleton {
 	
 	public Server getServerByName(String name)
 	{
+		String[] splitString = name.split("-");
+		String peerName = splitString[0];
+		int port = Integer.parseInt(splitString[1]);
+
 		Server serverToReturn= null;
 		for(Server server: serverList)
 		{
-			if(server.getServerPeerName()==name)
+			if(server.getServerPeerName().equals(peerName)&& server.getPort()==port)
 			{
 				serverToReturn = new Server();
 				serverToReturn = server;

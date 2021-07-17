@@ -1,8 +1,10 @@
 package main;
 
+import java.awt.BorderLayout;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -16,6 +18,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import main.app.client.ClientThread;
+import main.app.config.ConnectedClient;
 import main.app.config.Singleton;
 import main.app.model.Server;
 import main.app.observerdesign.client.ClientMessageSubject;
@@ -38,6 +41,8 @@ public class MainApplication extends JFrame {
 	private Singleton singleton;
 	private ClientMessageSubject subject;
 	private ServerMessageObserver observer;
+	private JLabel receiveLabel,sendLabel;
+	private ConnectedClient connectedClient;
 	/**
 	 * MAIN APPLICATION COMPONENTS END
 	 */
@@ -71,10 +76,18 @@ public class MainApplication extends JFrame {
 	public MainApplication()
 	{
 		singleton = Singleton.getSingletonInstance();
+		connectedClient = ConnectedClient.getConnectedClientInstance();
 		initialize();
 		onLoad();
 		
 		JPanel panel = new JPanel();
+		JPanel panelMiddle = new JPanel();
+		JPanel panelMother = new JPanel();
+		panelMother.setLayout(new BorderLayout());
+		
+		receiveLabel=new JLabel("Received:");
+		sendLabel= new JLabel("Sent:");
+		
 		addServer = new JButton("Add Server");
 		deleteServer = new JButton("Delete Server");
 		sendToServer = new JButton("Send");
@@ -88,6 +101,7 @@ public class MainApplication extends JFrame {
 		
 		addServer.addActionListener(e -> addServer());
 		connect.addActionListener(e -> connectServer());
+		disconnect.addActionListener(e -> disconnectServer());
 		sendToServer.addActionListener(e -> sendMessageToServer());
 		
 		sendArea = new JTextArea(12,10);
@@ -105,12 +119,19 @@ public class MainApplication extends JFrame {
 		panel.add(deleteServer);
 		panel.add(comboBox);
 		panel.add(connect);
-		panel.add(pane);
-		panel.add(sendToServer);
-		panel.add(pane2);
+		panel.add(disconnect);
+		
+		panelMiddle.add(receiveLabel);
+		panelMiddle.add(pane2);
+		panelMiddle.add(sendLabel);
+		panelMiddle.add(pane);
+		panelMiddle.add(sendToServer);
+		
+		panelMother.add(panel,BorderLayout.NORTH);
+		panelMother.add(panelMiddle,BorderLayout.CENTER);
 		
 		observer = new ServerMessageObserver(receiveArea);
-		this.add(panel);
+		this.add(panelMother);
 	}
 	//===========================================================================================
 	public void showSelectedItem(ItemEvent e)
@@ -132,7 +153,6 @@ public class MainApplication extends JFrame {
 	 */
 	public void initialize()
 	{
-		this.setTitle("Peer Network Application");
 		this.setSize(600,450);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(false);
@@ -186,6 +206,7 @@ public class MainApplication extends JFrame {
 			new Thread(new ServerThread(observer)).start();
 			
 			this.setVisible(true);
+			this.setTitle("Peer Network Application: "+singleton.getServerPeerName()+"-"+singleton.getServerPortNumber());
 			initialDialog.setVisible(false);
 			
 		}else {
@@ -257,12 +278,51 @@ public class MainApplication extends JFrame {
 		}
 	}
 	
+	public void disconnectServer()
+	{
+		String combo = comboBox.getSelectedItem().toString();
+		if(combo!=null)
+		{
+			if(!combo.equals("Peers"))
+			{
+				String[] splitString= combo.split("-");
+				
+				Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+				
+				for(Thread thread: threadSet)
+				{
+					String threadName = thread.getName();
+					String[] threadSplit = threadName.split("-");
+					System.out.println(threadName);
+					if(threadSplit.length>=2)
+					{
+						;
+						int port = Integer.parseInt(threadSplit[1]);
+						if(port == Integer.parseInt(splitString[1]))
+						{
+							thread.interrupt();
+							System.out.println("THREAD INTERRUPTED:"+port);
+						}
+					}
+					
+					
+				}
+			}
+		}
+	}
+	
+	
+	
 	public void sendMessageToServer()
 	{
 		String message = sendArea.getText();
 		if(message != null)
 		{
-			subject.sendMessage(message);
+			String combo = comboBox.getSelectedItem().toString();
+			if(combo!=null)
+			{
+				subject.sendMessage(message);
+			}
 		}else {
 			JOptionPane.showMessageDialog(this,"No Message Available","Add Message",JOptionPane.INFORMATION_MESSAGE);
 		}
@@ -296,7 +356,7 @@ public class MainApplication extends JFrame {
 		
 		for(Server server: singleton.getAllServers())
 		{
-			comboBox.addItem(server.getServerPeerName());
+			comboBox.addItem(server.getServerPeerName()+"-"+server.getPort());
 		}
 	}
 	

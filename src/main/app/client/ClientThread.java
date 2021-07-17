@@ -18,18 +18,15 @@ import main.app.observerdesign.client.ClientMessageSubject;
  *
  */
 public class ClientThread implements Runnable {
-
 	private Server server;
 	private Singleton singleton;
 	private ClientMessageSubject subject;
-	
 	public ClientThread(Server server, ClientMessageSubject subject)
 	{
 		this.server = server;
 		this.subject = subject;
 		singleton = Singleton.getSingletonInstance();
 	}
-	
 	@Override
 	public void run() 
 	{
@@ -39,7 +36,7 @@ public class ClientThread implements Runnable {
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			
 			//The client will send it's name to server to tell it its them
-			out.writeUTF(singleton.getServerPeerName());
+			out.writeUTF(singleton.getServerPeerName()+"-"+singleton.getServerPortNumber());
 			ClientMessageObserver observer = new ClientMessageObserver(out);
 			this.subject.addSubscriber(observer);
 			
@@ -49,9 +46,7 @@ public class ClientThread implements Runnable {
 				//Once a subject has changed
 				//So the observer must receive a data output stream reference
 				//It will use it to send out data to corresponding server
-		
-			}
-			
+			}	
 			
 		}catch(IOException e)
 		{

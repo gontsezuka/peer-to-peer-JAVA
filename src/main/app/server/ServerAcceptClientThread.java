@@ -42,7 +42,7 @@ public class ServerAcceptClientThread implements Runnable {
 			subject.addSubscriber(observer);
 			DataInputStream in = new DataInputStream(socket.getInputStream());
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-			
+			//The server Thread must contain name of client
 			String nameOfClient = in.readUTF();
 			Thread.currentThread().setName(nameOfClient);
 			connectedClient.addConnectedClient(nameOfClient);
@@ -51,11 +51,7 @@ public class ServerAcceptClientThread implements Runnable {
 			
 			while(threadProcess)
 			{
-				if(Thread.interrupted())
-				{	
-					threadProcess=false;
-					System.out.println("THREAD EXITED SUCCESSUFULLY");
-				}
+				
 				//System.out.println("Message Received: "+ in.readUTF());
 				subject.sendMessage(Thread.currentThread().getName()+": "+in.readUTF()+"\n");
 			}

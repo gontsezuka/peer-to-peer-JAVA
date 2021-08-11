@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -24,9 +25,9 @@ import main.app.model.Server;
 import main.app.observerdesign.client.ClientMessageSubject;
 import main.app.server.ServerThread;
 import main.app.server.observerdesign.ServerMessageObserver;
-
+	
 public class MainApplication extends JFrame {
-
+	
 	public static void main(String[] args)
 	{
 		new MainApplication();
@@ -81,8 +82,11 @@ public class MainApplication extends JFrame {
 		onLoad();
 		
 		JPanel panel = new JPanel();
-		JPanel panelMiddle = new JPanel();
+		JPanel panelMiddle1 = new JPanel();
+		JPanel panelMiddle2 = new JPanel();
 		JPanel panelMother = new JPanel();
+		Box boxMiddle = Box.createVerticalBox();
+		
 		panelMother.setLayout(new BorderLayout());
 		
 		receiveLabel=new JLabel("Received:");
@@ -104,8 +108,8 @@ public class MainApplication extends JFrame {
 		disconnect.addActionListener(e -> disconnectServer());
 		sendToServer.addActionListener(e -> sendMessageToServer());
 		
-		sendArea = new JTextArea(12,10);
-		receiveArea = new JTextArea(12,10);
+		sendArea = new JTextArea(4,30);
+		receiveArea = new JTextArea(4,30);
 		sendArea.setLineWrap(true);
 		sendArea.setWrapStyleWord(true);
 		receiveArea.setLineWrap(true);
@@ -121,14 +125,23 @@ public class MainApplication extends JFrame {
 		panel.add(connect);
 		panel.add(disconnect);
 		
-		panelMiddle.add(receiveLabel);
-		panelMiddle.add(pane2);
-		panelMiddle.add(sendLabel);
-		panelMiddle.add(pane);
-		panelMiddle.add(sendToServer);
+		panelMiddle1.add(pane2);
+		panelMiddle2.add(pane);
+		
+		boxMiddle.add(receiveLabel);
+		boxMiddle.add(panelMiddle1);
+		boxMiddle.add(sendLabel);
+		//SEND SECTION
+		boxMiddle.add(panelMiddle2);
+		boxMiddle.add(sendToServer);
+//		panelMiddle.add(receiveLabel);
+//		panelMiddle.add(pane2);
+//		panelMiddle.add(sendLabel);
+//		panelMiddle.add(pane);
+//		panelMiddle.add(sendToServer);
 		
 		panelMother.add(panel,BorderLayout.NORTH);
-		panelMother.add(panelMiddle,BorderLayout.CENTER);
+		panelMother.add(boxMiddle,BorderLayout.CENTER);
 		
 		observer = new ServerMessageObserver(receiveArea);
 		this.add(panelMother);
@@ -280,23 +293,27 @@ public class MainApplication extends JFrame {
 	
 	public void disconnectServer()
 	{
+		/*
+		 * Once "WE" client establish connection to server
+		 * "We"client can disconnect it
+		 */
 		String combo = comboBox.getSelectedItem().toString();
 		if(combo!=null)
 		{
 			if(!combo.equals("Peers"))
 			{
-				String[] splitString= combo.split("-");
+				String[] splitString= combo.split(":");
 				
 				Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
 				
 				for(Thread thread: threadSet)
 				{
 					String threadName = thread.getName();
-					String[] threadSplit = threadName.split("-");
+					String[] threadSplit = threadName.split(":");
 					System.out.println(threadName);
 					if(threadSplit.length>=2)
 					{
-						;
+					
 						int port = Integer.parseInt(threadSplit[1]);
 						if(port == Integer.parseInt(splitString[1]))
 						{
@@ -304,7 +321,6 @@ public class MainApplication extends JFrame {
 							System.out.println("THREAD INTERRUPTED:"+port);
 						}
 					}
-					
 					
 				}
 			}
@@ -356,7 +372,7 @@ public class MainApplication extends JFrame {
 		
 		for(Server server: singleton.getAllServers())
 		{
-			comboBox.addItem(server.getServerPeerName()+"-"+server.getPort());
+			comboBox.addItem(server.getServerPeerName()+":"+server.getPort());
 		}
 	}
 	

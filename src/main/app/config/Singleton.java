@@ -69,7 +69,7 @@ public class Singleton {
 	
 	public Server getServerByName(String name)
 	{
-		String[] splitString = name.split("-");
+		String[] splitString = name.split(":");
 		String peerName = splitString[0];
 		int port = Integer.parseInt(splitString[1]);
 

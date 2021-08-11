@@ -21,10 +21,13 @@ public class ClientThread implements Runnable {
 	private Server server;
 	private Singleton singleton;
 	private ClientMessageSubject subject;
+	private Boolean threadProcess;
+	
 	public ClientThread(Server server, ClientMessageSubject subject)
 	{
 		this.server = server;
 		this.subject = subject;
+		threadProcess = true;
 		singleton = Singleton.getSingletonInstance();
 	}
 	@Override
@@ -36,12 +39,21 @@ public class ClientThread implements Runnable {
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			
 			//The client will send it's name to server to tell it its them
-			out.writeUTF(singleton.getServerPeerName()+"-"+singleton.getServerPortNumber());
+			out.writeUTF(singleton.getServerPeerName()+":"+singleton.getServerPortNumber());
 			ClientMessageObserver observer = new ClientMessageObserver(out);
 			this.subject.addSubscriber(observer);
-			
-			while(true)
+			//The client Thread must contain name of server
+			Thread.currentThread().setName(server.getServerPeerName()+":"+server.getPort());
+			while(threadProcess)
 			{
+				if(Thread.interrupted())
+				{	
+					threadProcess=false;
+					out.close();
+					socket.close();
+					System.out.println("THREAD EXITED SUCCESSUFULLY");
+					
+				}
 				//The OBSERVER must send a notification from here
 				//Once a subject has changed
 				//So the observer must receive a data output stream reference
